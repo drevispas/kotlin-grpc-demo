@@ -23,20 +23,28 @@ ext["grpcVersion"] = "1.37.0"
 ext["grpcKotlinVersion"] = "1.1.0"
 ext["protobufVersion"] = "3.15.8"
 //ext["protobufVersion"] = "3.18.1" // 역시 최신이지만 사용하지 않음
+ext["springBootVersion"] = "2.5.5"
 
 dependencies {
     // Grpc
     implementation("io.grpc:grpc-protobuf:${rootProject.ext["grpcVersion"]}") // com.google.protobuf.*
 //    implementation("com.google.protobuf:protobuf-java-util:${rootProject.ext["protobufVersion"]}")
     implementation("io.grpc:grpc-kotlin-stub:${rootProject.ext["grpcKotlinVersion"]}") // io.grpc.*
-    runtimeOnly("io.grpc:grpc-netty:${rootProject.ext["grpcVersion"]}")
+//    implementation("io.grpc:grpc-netty:${rootProject.ext["grpcVersion"]}")
+//    implementation("io.github.lognet:grpc-spring-boot-starter:4.5.7")
+    implementation("net.devh:grpc-server-spring-boot-starter:2.12.0.RELEASE")
 
     // Added by Spring
-    implementation("org.springframework.boot:spring-boot-starter-web")
+//    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
+//    developmentOnly("org.springframework.boot:spring-boot-devtools")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+//    implementation("mysql:mysql-connector-java")
+    implementation("com.h2database:h2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
