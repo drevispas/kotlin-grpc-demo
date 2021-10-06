@@ -1,0 +1,304 @@
+syntax = "proto3";
+package pgintegration.v2;
+
+//import "pgintegration/v2/chargeinfo.proto";
+//import "pgintegration/v2/kcp_extra.proto";
+//import "pgintegration/v2/paymentwall_extra.proto";
+//import "pgintegration/v2/tx_types.proto";
+//import "pgintegration/v2/pg_types.proto";
+//import "pgintegration/v2/currencies.proto";
+
+option go_package = "github.com/iamport/pg-service-interface/gen_src/go/pgintegration/v2";
+option java_package = "finance.chai.pg.pgintegration.v2";
+option java_multiple_files=true; 
+option java_generic_services= true;
+
+service PgintegrationService {
+    rpc Preprocess(PreprocessRequest) returns (PreprocessResponse);
+    rpc Confirm(ConfirmRequest) returns (ConfirmResponse);
+    // rpc Cancel(CancelRequest) returns (CancelResponse);
+}
+
+message PreprocessRequest {
+    message CommonInfoRequest {
+        PGProvider pg_provider = 1;
+        string pg_id = 2;
+        string merchant_id = 3;
+        string tx_id = 4; // Port's tx id (imp_uid in v1)
+        string order_id = 5;
+        bool is_sandbox = 6; // true = sandbox / false = production
+        TxType tx_type = 7; // card, certification, directpay, phone, vbank, transfer, point
+        bool is_escrow = 8;
+        Currency currency = 9; // USD, KRW, ...
+    
+        float total_amount = 10; // 총 금액
+        float service_fee_amount = 11; // 봉사료
+        float duty_free_amount = 12; // 면세부 금액
+    
+        string pay_method_with_extra = 13; // e.g) AUTH:CARD
+        string hub_pg = 14; // hub pg provider
+        string user_agent = 15; // PC, mobile, ...
+        string referrer_url = 16;
+        string tier_code = 17; // 하위 가맹점 코드
+        string redirect_url = 18;
+        string card_code = 19;
+        string language = 20;
+    }
+
+    message CustomerInfoRequest {
+        string phone_number = 1;
+        string firstname = 2;
+        string lastname = 3;
+        string email = 4;
+        string zipcode = 5;
+        string address = 6;
+    }
+
+    message ChargeInfoRequest {
+        oneof ChargeInfoRequestOptions {
+            CardPreprocessChargeInfoRequest card = 1;
+            // VBankPreprocessChargeInfoRequest vbank = 2;
+            // TransferPreprocessChargeInfoRequest trans = 3;
+            // BillingPreprocessChargeInfoRequest billing = 4;
+            // PointPreprocessChargeInfoRequest point  = 5;
+            // CashReceiptPreprocessChargeInfoRequest cash_receipt = 6;
+            // CertificationPreprocessChargeInfoRequest certification = 7;
+        }
+    }
+
+    message ExtraInfoRequest {
+        oneof ExtraInfoRequestOptions {
+            KCPPreprocessExtraInfoRequest kcp = 1;
+            PaymentwallPreprocessExtraInfoRequest paymentwall = 2;
+        }
+    }
+
+    CommonInfoRequest common = 1;
+    CustomerInfoRequest customer_info = 2;
+    ChargeInfoRequest charge_info = 3;
+    ExtraInfoRequest extra = 4;
+}
+
+message PreprocessResponse {
+    message CommonInfoResponse {
+        message DetailData {
+            string pg_tx_id = 1;
+            int64 paid_at = 2;
+        }
+    
+        int32 code = 1;
+        string message = 2;
+        DetailData data = 3;
+    }
+
+    CommonInfoResponse common = 1;
+}
+
+message ConfirmRequest {
+    message CommonInfoRequest {
+        PGProvider pg_provider = 1;
+        string tx_id = 2;
+        string pg_id = 3;
+        string pg_tx_id = 4;
+        string merchant_order_id = 5;
+        TxType tx_type = 6;
+        int64 paid_at = 7;
+        float total_amount = 8;
+    }
+    
+    message ExtraInfoRequest {
+        oneof ConfirmExtraInfoRequestOptions {
+            KCPConfirmExtraInfoRequest kcp = 1;
+            PaymentwallConfirmExtraInfoRequest paymentwall = 2;
+        }
+    }
+
+    CommonInfoRequest common = 1;
+    ExtraInfoRequest extra = 4;
+}
+
+message ConfirmResponse {
+    message CommonInfoResponse {
+        message DetailCommonInfoResponseData {
+            string tx_id = 1;
+            string pg_tx_id = 2;
+            int64 paid_at = 3;
+            string receipt_link = 4;
+            Currency currency = 5;
+        }
+    
+        int32 code = 1;
+        string message = 2;
+        DetailCommonInfoResponseData data = 3;
+    }
+    
+    message ChargeInfoResponse {
+        oneof ChargeInfoResponseOptions {
+            CardConfirmChargeInfoResponse card = 1;
+            // VBankConfirmChargeInfoResponse vbank = 2;
+            // TransferConfirmChargeInfoResponse trans = 3;
+            // CashReceiptConfirmChargeInfoResponse cash_receipt = 4;
+            // PointConfirmChargeInfoResponse point = 5;
+            // BillingConfirmChargeInfoResponse billing = 6;
+        }
+    }
+    
+    message ExtraInfoResponse {
+        oneof ExtraInfoResponseOptions {
+            KCPConfirmExtraInfoResponse kcp = 1;
+            PaymentwallConfirmExtraInfoResponse paymentwall = 2;
+        }
+    }
+
+    CommonInfoResponse common = 1;
+    ChargeInfoResponse charge_info = 2;
+    ExtraInfoResponse extra = 4;
+}
+
+// TBD
+// message CancelRequest {}
+// message CancelResponse {}
+
+enum PGProvider {
+    // 최대한 DB와 값을 맞추기 위하여 소문자처리
+    PG_HTML5_INICIS = 0;   // Inicis new web
+    PG_PAYPAL       = 1;   // Paypal express check
+    PG_INICIS       = 2;   // Inicis legacy
+    PG_DANAL        = 3;   // Danal phone
+    PG_NICS         = 4;   //
+    PG_DANAL_TPAY   = 5;   // Danal general
+    PG_JTNET        = 6;   //
+    PG_UPLUS        = 7;   // kakao legacy
+    PG_NAVERPAY     = 8;   // Naverpay (new)
+    PG_KAKAO        = 9;   // Kakao
+    PG_SETTLE       = 10;  // Settlebank
+    PG_KCP          = 11;  // KCP
+    PG_MOBILIANS    = 12;  // Mobilians
+    PG_KAKAOPAY     = 13;  // Kakaopay
+    PG_NAVERCO      = 14;  // Naver
+    PG_SYRUP        = 15;  // Syruppay
+    PG_KICC         = 16;  //
+    PG_EXIMBAY      = 17;  //
+    PG_SMILEPAY     = 18;  //
+    PG_PAYCO        = 19;  //
+    PG_KCP_BILLING  = 20;  //
+    PG_ALIPAY       = 21;  //
+    PG_PAYPLE       = 22;  //
+    PG_CHAI         = 23;  //
+    PG_BLUEWALNUT   = 24;  //
+    PG_SMARTRO      = 25;  //
+    PG_PAYMENTWALL  = 26;  //
+}
+
+enum TxType {
+    // 최대한 DB와 값을 맞추기 위하여 소문자처리
+    TX_SAMSUNG        = 0;   // 삼성페이
+    TX_CARD           = 1;   // 신용카드
+    TX_TRANS          = 2;   // 계좌이체
+    TX_VBANK          = 3;   // 가상계좌
+    TX_PHONE          = 4;   // 휴대폰
+    TX_CULTURELAND    = 5;   // 문화상품권
+    TX_SMARTCULTURE   = 6;   // 스마트문상
+    TX_BOOKNLIFE      = 7;   // 도서문화상품권
+    TX_HAPPYMONEY     = 8;   // 해피머니
+    TX_POINT          = 9;   // 포인트
+    TX_SSGPAY         = 10;  // SSGPAY
+    TX_LPAY           = 11;  // LPAY
+    TX_PAYCO          = 12;  // 페이코
+    TX_KAKAOPAY       = 13;  // 카카오페이
+    TX_TOSSPAY        = 14;  // 토스
+    TX_NAVERPAY       = 15;  // 네이버페이
+}
+
+enum Currency {
+    KRW = 0;
+    USD = 1;
+    JPY = 2;
+    CHY = 3;
+    VND = 4;
+    INL = 5;
+}
+
+message CardPreprocessChargeInfoRequest {
+    string card_code = 1;
+    string card_number = 2;
+    string expiry = 3;
+    string birth_or_business_registration_number = 4;
+    bool is_interest_free = 5;
+    string pwd_2digit = 6;
+    string issue_code = 7;
+    string installment_months = 8;
+    string cvc = 9;
+    bool is_store_card = 10;
+    string stored_card_alias = 11;
+}
+
+message VBankPreprocessChargeInfoRequest {}
+message TransferPreprocessChargeInfoRequest {}
+message BillingPreprocessChargeInfoRequest {}
+message PointPreprocessChargeInfoRequest {}
+message CashReceiptPreprocessChargeInfoRequest {}
+message CertificationPreprocessChargeInfoRequest {}
+
+
+message CardConfirmChargeInfoResponse {
+    string bin = 1;
+    string country = 2;
+    string type = 3;
+    string imp_alias = 4;
+    string key = 5;
+    string billing_key = 6;
+    int64 created_at = 7;
+    int64 valid_until = 8;
+}
+
+message VBankConfirmChargeInfoResponse {
+    string tx_id = 1;
+    string account_no = 2;
+    string account_bankcode = 3;
+    string account_owner = 4;
+    int64 valid_until = 5;
+}
+
+message TransferConfirmChargeInfoResponse {}
+message CashReceiptConfirmChargeInfoResponse {}
+message PointConfirmChargeInfoResponse {}
+
+message BillingConfirmChargeInfoResponse {
+    string key = 1;
+    int64 created_at = 2;
+    int64 valid_until = 3;
+}
+
+message KCPPreprocessExtraInfoRequest {
+    string issue_code = 1;
+    string app_flag = 2;
+    string pg_addtional_public_key = 3; // 이 PG는 키가 2중..
+    string pg_addtional_private_key = 4;
+    string transmitted_code = 5; // trans_cd
+    string result_code = 6; // res_cd
+    string eng_flag = 7;
+}
+
+
+message KCPConfirmExtraInfoRequest {
+    string encoded_info = 1;
+    string encoded_data = 2;
+    string result_code = 3;
+    string transmitted_code = 4;
+    string use_pay_method = 5;
+}
+
+message KCPConfirmExtraInfoResponse {
+    string transmitted_code = 1; // trans_cd
+    string result_code = 2;
+}
+
+message PaymentwallPreprocessExtraInfoRequest {}
+
+message PaymentwallConfirmExtraInfoRequest {}
+
+message PaymentwallConfirmExtraInfoResponse {
+    string risk = 1;
+}
+
