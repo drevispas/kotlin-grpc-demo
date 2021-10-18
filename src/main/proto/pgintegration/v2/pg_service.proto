@@ -192,22 +192,22 @@ enum PGProvider {
 
 enum TxType {
     // 최대한 DB와 값을 맞추기 위하여 소문자처리
-    TX_SAMSUNG        = 0;   // 삼성페이
-    TX_CARD           = 1;   // 신용카드
-    TX_TRANS          = 2;   // 계좌이체
-    TX_VBANK          = 3;   // 가상계좌
-    TX_PHONE          = 4;   // 휴대폰
-    TX_CULTURELAND    = 5;   // 문화상품권
-    TX_SMARTCULTURE   = 6;   // 스마트문상
-    TX_BOOKNLIFE      = 7;   // 도서문화상품권
-    TX_HAPPYMONEY     = 8;   // 해피머니
-    TX_POINT          = 9;   // 포인트
-    TX_SSGPAY         = 10;  // SSGPAY
-    TX_LPAY           = 11;  // LPAY
-    TX_PAYCO          = 12;  // 페이코
-    TX_KAKAOPAY       = 13;  // 카카오페이
-    TX_TOSSPAY        = 14;  // 토스
-    TX_NAVERPAY       = 15;  // 네이버페이
+    TXTYPE_SAMSUNG        = 0;   // 삼성페이
+    TXTYPE_CARD           = 1;   // 신용카드
+    TXTYPE_TRANS          = 2;   // 계좌이체
+    TXTYPE_VBANK          = 3;   // 가상계좌
+    TXTYPE_PHONE          = 4;   // 휴대폰
+    TXTYPE_CULTURELAND    = 5;   // 문화상품권
+    TXTYPE_SMARTCULTURE   = 6;   // 스마트문상
+    TXTYPE_BOOKNLIFE      = 7;   // 도서문화상품권
+    TXTYPE_HAPPYMONEY     = 8;   // 해피머니
+    TXTYPE_POINT          = 9;   // 포인트
+    TXTYPE_SSGPAY         = 10;  // SSGPAY
+    TXTYPE_LPAY           = 11;  // LPAY
+    TXTYPE_PAYCO          = 12;  // 페이코
+    TXTYPE_KAKAOPAY       = 13;  // 카카오페이
+    TXTYPE_TOSSPAY        = 14;  // 토스
+    TXTYPE_NAVERPAY       = 15;  // 네이버페이
 }
 
 enum Currency {

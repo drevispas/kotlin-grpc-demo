@@ -18,24 +18,27 @@ repositories {
     mavenCentral()
 }
 
-ext["grpcVersion"] = "1.37.0"
-//ext["grpcVersion"] = "1.41.0" // 최신이지만 1.40.0에서 새로 생긴 annotation을 못 읽어오는 문제 있음
-ext["grpcKotlinVersion"] = "1.1.0"
-ext["protobufVersion"] = "3.15.8"
-//ext["protobufVersion"] = "3.18.1" // 역시 최신이지만 사용하지 않음
-ext["springBootVersion"] = "2.5.5"
+val grpcVersion by extra("1.37.0")
+//val grpcVersion by extra ("1.41.0") // 최신이지만 1.40.0에서 새로 생긴 annotation을 못 읽어오는 문제 있음
+val grpcKotlinVersion by extra("1.1.0")
+//val protobufVersion by extra("3.15.8")
+val protobufVersion by extra ("3.18.1")
+val springBootVersion by extra("2.5.5")
+val lognetVersion by extra("4.5.7")
+val platform by extra("osx-x86_64")
 
 dependencies {
     // Grpc
-    implementation("io.grpc:grpc-protobuf:${rootProject.ext["grpcVersion"]}") // com.google.protobuf.*
-//    implementation("com.google.protobuf:protobuf-java-util:${rootProject.ext["protobufVersion"]}")
-    implementation("io.grpc:grpc-kotlin-stub:${rootProject.ext["grpcKotlinVersion"]}") // io.grpc.*
-//    implementation("io.grpc:grpc-netty:${rootProject.ext["grpcVersion"]}")
-//    implementation("io.github.lognet:grpc-spring-boot-starter:4.5.7")
-    implementation("net.devh:grpc-server-spring-boot-starter:2.12.0.RELEASE")
+    implementation("io.grpc:grpc-protobuf:$grpcVersion") // com.google.protobuf.*
+//    implementation("com.google.protobuf:protobuf-java-util:$protobufVersion")
+    implementation("io.grpc:grpc-kotlin-stub:$grpcKotlinVersion") // io.grpc.*
+    implementation("com.google.protobuf:protobuf-kotlin:$protobufVersion")
+//    implementation("io.grpc:grpc-netty:$grpcVersion")
+    implementation("io.github.lognet:grpc-spring-boot-starter:$lognetVersion")
+//    implementation("net.devh:grpc-server-spring-boot-starter:2.12.0.RELEASE")
 
     // Added by Spring
-//    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -45,6 +48,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 //    implementation("mysql:mysql-connector-java")
     implementation("com.h2database:h2")
+    implementation("mysql:mysql-connector-java")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
@@ -73,18 +77,18 @@ sourceSets {
 
 protobuf {
     protoc {
-        //artifact = "com.google.protobuf:protoc:${rootProject.ext["protobufVersion"]}"
-        artifact = "com.google.protobuf:protoc:${rootProject.ext["protobufVersion"]}:osx-x86_64"
+        //artifact = "com.google.protobuf:protoc:$protobufVersion"
+        artifact = "com.google.protobuf:protoc:$protobufVersion:$platform"
     }
     plugins {
         // Java version의 ServiceGrpc 객체 생성
         id("grpc") {
-            //artifact = "io.grpc:protoc-gen-grpc-java:${rootProject.ext["grpcVersion"]}"
-            artifact = "io.grpc:protoc-gen-grpc-java:${rootProject.ext["grpcVersion"]}:osx-x86_64"
+            //artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
+            artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion:$platform"
         }
         // Kotlin version의 ServiceGrpcKt 객체 생성
         id("grpckt") {
-            artifact = "io.grpc:protoc-gen-grpc-kotlin:${rootProject.ext["grpcKotlinVersion"]}:jdk7@jar"
+            artifact = "io.grpc:protoc-gen-grpc-kotlin:$grpcKotlinVersion:jdk7@jar"
         }
     }
     generateProtoTasks {
@@ -92,6 +96,9 @@ protobuf {
             it.plugins {
                 id("grpc")
                 id("grpckt")
+            }
+            it.builtins {
+                id("kotlin")
             }
         }
     }
